@@ -11,7 +11,7 @@ Bài thực hành chuyên sâu về **Học chuyển giao (Transfer Learning)** 
 4. **Giám sát MLOps:** Trực quan hóa độ lỗi (Loss), độ chính xác (Accuracy), cấu trúc mô hình (Model Graph) và hình ảnh mẫu bằng **TensorBoard**.
 ## 📂 Cấu Trúc Thư Mục (Project Structure)
 ```markdown
-practice2_pretrained_dl/
+Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures/
 │
 ├── configs/
 │   └── config.yaml             # Cấu hình siêu tham số (batch_size, lr, epochs, model_name, device)
