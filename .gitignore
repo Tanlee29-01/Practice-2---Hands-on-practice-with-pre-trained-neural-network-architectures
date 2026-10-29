@@ -1,6 +1,22 @@
+# Dữ liệu
+data/
 cifar-10-batches-py/
 *.zip
 *.tar.gz
 
+# Python & Môi trường
 __pycache__/
-*.pyc
+*.py[cod]
+*.class
+.pytest_cache/
+.venv/
+venv/
+
+# TensorBoard Logs & Checkpoints (trọng số mô hình .pth lớn)
+runs/
+checkpoints/
+*.pth
+
+# File giải thích cá nhân / scripts tạm
+GIAI_THICH_NHIEM_VU_LOGGER.md
+demo_chapter6_logger.py
