@@ -1,0 +1,2 @@
+﻿experiment,epoch,learning_rate,batch_size,weight_decay,train_samples,val_samples,train_loss,train_accuracy,val_loss,val_accuracy
+baseline,1,0.001,64,0.0001,256,128,2.506285786628723,8.59375,2.324029326438904,10.15625

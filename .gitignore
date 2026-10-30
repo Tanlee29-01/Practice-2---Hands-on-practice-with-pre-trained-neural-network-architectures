@@ -17,6 +17,8 @@ runs/
 checkpoints/
 *.pth
 
+
 # File giải thích cá nhân / scripts tạm
 GIAI_THICH_NHIEM_VU_LOGGER.md
 demo_chapter6_logger.py
+

@@ -69,11 +69,12 @@ source venv/bin/activate
 
 ### 2. Cài đặt các thư viện cần thiết
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt --force-reinstall
 ```
 
 *Nội dung file `requirements.txt`:*
 ```text
+--extra-index-url https://download.pytorch.org/whl/cu121
 torch>=2.0.0
 torchvision>=0.15.0
 tensorboard>=2.12.0
