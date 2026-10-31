@@ -97,7 +97,7 @@ def run(args):
     )
     configs = CONFIGS if args.sweep else CONFIGS[:1]
 
-    output_dir = ROOT / "results" / datetime.now().strftime(
+    output_dir = ROOT / "results" / "experiments" / datetime.now().strftime(
         "%Y%m%d_%H%M%S_%f"
     )
     output_dir.mkdir(parents=True, exist_ok=True)

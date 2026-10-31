@@ -17,6 +17,9 @@ runs/
 checkpoints/
 *.pth
 
+# Bao cao danh gia duoc tao tu dong
+results/evaluation/
+
 
 # File giải thích cá nhân / scripts tạm
 GIAI_THICH_NHIEM_VU_LOGGER.md
