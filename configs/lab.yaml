@@ -1,0 +1,8 @@
+# Bai lab dau tien: 1 epoch tren toan bo CIFAR-10, giam batch de tiet kiem RAM.
+# Neu chi muon kiem tra luong nhanh, dung experiments.py voi tap con.
+batch_size: 16
+learning_rate: 0.001
+epochs: 1
+model_name: resnet18
+device: auto
+weight_decay: 0.0001

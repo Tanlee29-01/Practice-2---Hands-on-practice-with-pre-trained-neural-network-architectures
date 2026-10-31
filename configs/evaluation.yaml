@@ -1,0 +1,17 @@
+# Duong dan tuong doi duoc tinh tu thu muc goc du an.
+# null: tu chon checkpoint *_best.pth moi nhat va nhan dien kien truc.
+checkpoint: null
+checkpoint_dir: checkpoints
+model_name: null
+data_dir: data
+output_dir: results/evaluation
+batch_size: 64
+num_workers: 0
+image_size: 224
+device: auto
+download: false
+# 0: danh gia toan bo 10.000 anh test. So duong: lay mau voi seed ben duoi.
+max_samples: 0
+seed: 42
+top_k: 5
+plots: true

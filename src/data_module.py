@@ -20,7 +20,10 @@ class CIFAR10DataModule:
         self.train_dataset = None
         self.test_dataset = None
 
-    def setup(self) -> None:
+    def setup(self, stage: str = "fit", download: bool = True) -> None:
+        """Prepare both splits for fitting, or only the test split for evaluation."""
+        if stage not in {"fit", "test"}:
+            raise ValueError("stage must be 'fit' or 'test'.")
         normalize = transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
             std=[0.229, 0.224, 0.225],
@@ -39,18 +42,19 @@ class CIFAR10DataModule:
             normalize,
         ])
 
-        self.train_dataset = datasets.CIFAR10(
-            root=self.data_dir,
-            train=True,
-            transform=self.train_transform,
-            download=True,
-        )
+        if stage == "fit":
+            self.train_dataset = datasets.CIFAR10(
+                root=self.data_dir,
+                train=True,
+                transform=self.train_transform,
+                download=download,
+            )
 
         self.test_dataset = datasets.CIFAR10(
             root=self.data_dir,
             train=False,
             transform=self.test_transform,
-            download=True,
+            download=download,
         )
 
     def train_dataloader(self) -> DataLoader:
