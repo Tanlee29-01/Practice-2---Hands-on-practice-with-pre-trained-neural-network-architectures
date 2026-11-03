@@ -111,7 +111,7 @@ def run(config: dict[str, Any], checkpoint_path: Path | None = None) -> Path:
     logger = TensorBoardLogger(
         log_dir=ROOT / "runs",
         experiment_name=experiment_name,
-        checkpoint_dir=ROOT / "checkpoints",
+        checkpoint_dir=ROOT / "checkpoints/cifar10_checkpoints",
     )
 
     try:
@@ -125,9 +125,19 @@ def run(config: dict[str, Any], checkpoint_path: Path | None = None) -> Path:
             checkpoint = logger.load_checkpoint(
                 model=model,
                 path=checkpoint_path,
-                optimizer=trainer.optimizer,
                 device=device,
             )
+            optimizer_state = checkpoint.get("optimizer_state_dict")
+            if optimizer_state is not None:
+                try:
+                    trainer.optimizer.load_state_dict(optimizer_state)
+                except ValueError as exc:
+                    print(
+                        "Warning: optimizer state is incompatible with the "
+                        "current optimizer; starting with a fresh optimizer. "
+                        f"Details: {exc}",
+                        flush=True,
+                    )
             checkpoint_epoch = checkpoint.get("epoch")
             if isinstance(checkpoint_epoch, int):
                 start_epoch = checkpoint_epoch + 1
