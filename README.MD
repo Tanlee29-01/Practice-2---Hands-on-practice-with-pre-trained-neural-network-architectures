@@ -69,7 +69,7 @@ source venv/bin/activate
 
 ### 2. Cài đặt các thư viện cần thiết
 ```bash
-pip install -r requirements.txt --force-reinstall
+pip install -r requirements.txt 
 ```
 
 *Nội dung file `requirements.txt`:*
@@ -116,5 +116,5 @@ Sau đó truy cập đường dẫn `http://localhost:6006` trên trình duyệt
 
 ---
 
-## 📊 Kết Quả Thực Nghiệm Kỳ Vọng (Expected Results)
+.\venv\Scripts\python.exe main.py --config configs\config.yaml --checkpoint checkpoints\cifar10_checkpoints\resnet18_best.pth
 

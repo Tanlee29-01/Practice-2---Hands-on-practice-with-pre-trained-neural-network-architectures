@@ -22,3 +22,8 @@ checkpoints/
 GIAI_THICH_NHIEM_VU_LOGGER.md
 demo_chapter6_logger.py
 
+
+# Notebook
+notebooks/src_output_demo.ipynb/
+notebooks/cuda.ipynb/
+notebooks/experiment_demo.ipynb/
