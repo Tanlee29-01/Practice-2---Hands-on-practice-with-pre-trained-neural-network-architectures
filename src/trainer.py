@@ -81,7 +81,7 @@ class ModelTrainer:
 
         return avg_loss, accuracy
 
-    def evaluate(self):
+    def validation(self):
         self.model.eval()
 
         total_loss = 0.0
@@ -117,7 +117,7 @@ class ModelTrainer:
 
         for epoch in range(num_epochs):
             train_loss, train_acc = self.training_loop()
-            test_loss, test_acc = self.evaluate()
+            test_loss, test_acc = self.validation()
 
             history["train_loss"].append(train_loss)
             history["train_accuracy"].append(train_acc)

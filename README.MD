@@ -23,8 +23,8 @@ Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures/
 │   ├── data_module.py          # Class CIFAR10DataModule (Transforms, Dataset, DataLoader)
 │   ├── model_builder.py        # Class TransferModelBuilder (ResNet18, VGG16, DenseNet121)
 │   ├── trainer.py              # Class ModelTrainer (Vòng lặp Training 5 bước & Validation)
-│   └── logger.py               # Class TensorBoardLogger (add_scalar, add_graph, add_image)
-│
+│   └── logger.py               # Class TensorBoardLogger (add_scalar, add_graph, add_image)    
+│   
 ├── runs/                       # Thư mục lưu log TensorBoard (SummaryWriter)
 │
 ├── checkpoints/                # Thư mục lưu trọng số mô hình đã huấn luyện (.pth)
@@ -101,7 +101,42 @@ tensorboard --logdir=runs
 ```
 Sau đó truy cập đường dẫn `http://localhost:6006` trên trình duyệt web.
 
----
+
+### 3. Đánh giá model trên tập test
+Lệnh này tính accuracy, precision, recall, F1, AUC-ROC theo từng lớp, confusion matrix, và lưu vào thư mục output (mặc định thường là results/).
+
+```bash
+python -m src.evaluation --checkpoint checkpoints/cifar10_checkpoints/<tên_file>_best.pth --config configs/config.yaml --device auto
+```
+Tìm file .pth thật sự nằm ở đâu:
+
+```bash
+Get-ChildItem -Recurse -Filter *.pth -ErrorAction SilentlyContinue | Select-Object FullName
+```
+Mẹo: gõ checkpoints/cifar10_checkpoints/resnet18_ rồi nhấn Tab để PowerShell tự điền tên file.
+
+
+| Lỗi | Nguyên nhân | Cách xử lý |
+| --- | --- | --- |
+| error: the following arguments are required: --checkpoint | Chạy evaluation.py bằng nút ▶ nên không có tham số| Chạy bằng lệnh python -m src.evaluation --checkpoint ... ở trên |
+| No module named 'torch'| Terminal không dùng venv|Kích hoạt venv hoặc gọi .\venv\Scripts\python.exe  |
+
+### 4 cách chạy file test_evaluation.py
+```bash
+ python -m pytest tests/test_evaluation.py -v
+```
+Nếu chạy không được thì có lẽ .venv chưa được cài đặt thư viện pytest
+
+Cài thư viện pytest:
+```bash
+python -m pip install pytest
+```
+Sau đó chạy lại lệnh 
+```bash 
+python -m pytest tests/test_evaluation.py -v
+```
+Note: file evaluation.py là file chạy độc lập hoàn toàn trong chương trình, nó không bị phụ thuộc trong lúc train model.
+Vì vậy sau khi train model xong, vui lòng chạy tiếp file evaluation.py theo hướng dẫn bên trên tiếp tục đánh giá model.
 
 ## 👥 Phân Công Công Việc Nhóm (Group Member Roles)
 
