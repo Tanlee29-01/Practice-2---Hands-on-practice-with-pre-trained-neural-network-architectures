@@ -188,7 +188,7 @@ def run(args):
                 )
 
                 train_loss, train_acc = trainer.training_loop()
-                val_loss, val_acc = trainer.evaluate()
+                val_loss, val_acc = trainer.validation()
 
                 writer.writerow({
                     "experiment": name,

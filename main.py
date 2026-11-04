@@ -159,7 +159,7 @@ def run(config: dict[str, Any], checkpoint_path: Path | None = None) -> Path:
 
         for epoch in range(start_epoch, epochs + 1):
             train_loss, train_accuracy = trainer.training_loop()
-            test_loss, test_accuracy = trainer.evaluate()
+            test_loss, test_accuracy = trainer.validation()
 
             logger.log_epoch(
                 epoch,

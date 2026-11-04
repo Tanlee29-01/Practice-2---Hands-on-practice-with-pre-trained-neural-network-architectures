@@ -143,3 +143,47 @@ Lưu command, exit code, metric output, confusion matrix, precision, recall,
 F1-score, AUC-ROC, TensorBoard tag list và checkpoint path trong kết quả
 thực nghiệm/report. Nếu test không chạy được do môi trường, ghi rõ blocker và
 không đánh dấu Definition of Done là passed.
+
+## Implementation usage
+
+Module: `src/evaluation.py`
+
+Run the final test evaluation from the repository root after selecting and
+locking the checkpoint:
+
+```powershell
+python -m src.evaluation --checkpoint checkpoints\cifar10_checkpoints\<experiment>_best.pth --config configs\config.yaml --device auto
+```
+
+Optional arguments:
+
+- `--data-dir`: CIFAR-10 data directory (default: `data`).
+- `--output-dir`: root directory for evaluation artifacts (default:
+  `evaluation_results`).
+- `--device`: `auto`, `cpu`, or `cuda`.
+
+Each run creates a new timestamped folder containing:
+
+- `evaluation_report.json`: model metadata, confusion matrix and all metrics.
+- `metrics_per_class.csv`: per-class, macro and weighted metrics.
+- `confusion_matrix.png`: count and row-normalized confusion matrices.
+- `roc_curve.png`: one-vs-rest ROC curves and per-class AUC.
+
+`zero_division=0` is used for precision/recall/F1 when a class has no predicted
+samples. AUC-ROC is calculated from softmax scores, one-vs-rest, using the
+trapezoidal area under each class ROC curve; macro AUC is the unweighted mean
+of the ten class AUC values. Evaluation fails clearly if a true-label class is
+absent, because its ROC AUC is undefined.
+
+The module can also be called from Python with `evaluate_model(model,
+dataloader, device, class_names, output_dir, metadata)` for a small smoke test
+or another compatible classification dataset.
+
+### Important current-pipeline limitation
+
+At present, `main.py` uses the official test loader during every epoch and
+selects the best checkpoint using test accuracy. This is not compliant with
+the evaluation protocol above. Before treating a final test report as an
+unbiased estimate, the training pipeline must be updated in a separate task
+to select checkpoints using a validation split and reserve the test split
+until the final evaluation.
