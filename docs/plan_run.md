@@ -312,7 +312,76 @@ Get-ChildItem -Recurse checkpoints
 git status --short
 ```
 
-## 9. Check with Description
+## 9. EDA dữ liệu hình ảnh
+
+Chỉ chuyển sang bước này sau khi data module smoke test passed.
+
+```text
+Implement exactly one task: chạy EDA cho CIFAR-10.
+
+Chỉ sửa các file EDA được nêu trong task; không sửa source training hoặc
+dataset. Không thay đổi split, label, transform production hay hyperparameter.
+
+Kiểm tra và báo cáo:
+- Resolution, height, width, số kênh, dtype và shape.
+- Class distribution theo từng lớp ở train/validation/test.
+- Pixel min, max, mean, standard deviation theo kênh trước normalize.
+- Không có NaN, Inf hoặc giá trị pixel ngoài khoảng hợp lệ.
+
+Chạy trước trên subset nhỏ để kiểm tra shape, sau đó chạy đầy đủ.
+Báo command, output, exit code, seed, nguồn dữ liệu và artifact path.
+Không kết luận PASS khi thiếu số liệu thực tế.
+```
+
+Điều kiện chuyển bước:
+
+- Resolution thực tế khớp contract dataset.
+- Có đủ phân phối nhãn của mọi split.
+- Có pixel statistics theo kênh và không gian giá trị rõ ràng.
+- Không phát hiện lỗi dữ liệu chưa được giải thích.
+
+## 10. Evaluation metrics
+
+Chỉ chạy sau khi normal training đã tạo checkpoint hợp lệ.
+
+```text
+Implement exactly one task: đánh giá checkpoint CIFAR-10 trên test set.
+
+Chỉ sửa các file evaluation được nêu rõ; không sửa model, trainer, data split
+hoặc config training. Không dùng test set để tuning.
+
+Sau khi khóa checkpoint, tính:
+- Confusion matrix 10x10, hàng là true label và cột là predicted label.
+- Precision theo lớp, macro average và weighted average.
+- Recall theo lớp, macro average và weighted average.
+- F1-score theo lớp, macro average và weighted average.
+- AUC-ROC one-vs-rest cho 10 lớp bằng score/xác suất trước argmax.
+
+Kiểm tra logits/score shape, label range, tổng confusion matrix và metric
+finite. Ghi rõ zero-division, label binarization, threshold/quy ước và các
+lớp thiếu mẫu nếu có. Lưu figure/report không ghi đè artifact cũ.
+Báo checkpoint, model, seed, device, command, output, exit code và artifact.
+```
+
+Smoke test evaluation:
+
+```text
+Chạy evaluation smoke test trên subset test nhỏ.
+Kiểm tra confusion matrix đúng shape, mỗi metric có output theo lớp,
+macro/weighted average tồn tại, AUC nhận score đa lớp và không có NaN/Inf.
+Không chạy full evaluation nếu smoke test thất bại.
+```
+
+Normal evaluation:
+
+```text
+Chạy evaluation đầy đủ trên test set bằng checkpoint đã khóa.
+Không đổi checkpoint, threshold, split hoặc hyperparameter trong lúc chạy.
+Báo confusion matrix, precision, recall, F1-score, AUC-ROC, command,
+exit code và đường dẫn report/figure.
+```
+
+## 11. Check with Description
 
 ```text
 Check with Description.
@@ -323,6 +392,9 @@ Check with Description.
 - Backbone freeze đúng policy chưa?
 - Có validation riêng với test chưa?
 - Có tuning learning rate, batch size và weight decay chưa?
+- EDA có resolution, class distribution và pixel statistics chưa?
+- Evaluation có confusion matrix, precision, recall, F1-score và AUC-ROC chưa?
+- AUC-ROC có dùng score/xác suất trước argmax và one-vs-rest chưa?
 - TensorBoard có scalar, graph, image và config chưa?
 - Checkpoint có lưu và load được chưa?
 - Metric có hữu hạn và hợp lý không?
@@ -333,7 +405,7 @@ Chỉ kết luận PASS hoặc FAIL kèm bằng chứng command/output.
 Không sửa code trong bước review này.
 ```
 
-## 10. Khi có lỗi
+## 12. Khi có lỗi
 
 ```text
 Debug đúng một lỗi dưới đây.
@@ -362,7 +434,7 @@ Không sửa file không liên quan.
 Không dùng fallback im lặng hoặc broad exception.
 ```
 
-## 11. Review trước khi commit
+## 13. Review trước khi commit
 
 ```text
 Review toàn bộ diff hiện tại theo yêu cầu Practice 2.
@@ -373,6 +445,10 @@ Kiểm tra:
 - Sai freeze/fine-tune
 - Sai device
 - Sai loss/accuracy
+- Sai confusion matrix hoặc đảo true/predicted axis
+- Precision/recall/F1 chỉ có aggregate, thiếu kết quả theo lớp
+- AUC-ROC tính từ argmax thay vì score/xác suất
+- EDA làm thay đổi dữ liệu hoặc dùng test để tuning
 - Sai train/eval mode
 - Thiếu TensorBoard artifact
 - Checkpoint không đầy đủ
@@ -391,7 +467,7 @@ Không tự sửa code.
 
 Điểm quan trọng: mỗi prompt chỉ giao **một nhiệm vụ**, luôn yêu cầu AI chạy test sau khi viết code, và không chấp nhận câu trả lời “đã hoàn thành” nếu chưa có command, output và artifact cụ thể.
 
-## 12. Mẫu lệnh theo quy trình
+## 14. Mẫu lệnh theo quy trình
 
 ### Description
 
@@ -438,7 +514,7 @@ Chỉ trả lời PASS khi có bằng chứng command/output.
 Không sửa code trong bước review.
 ```
 
-## 13. Điều kiện kết thúc một task
+## 15. Điều kiện kết thúc một task
 
 Một task chỉ được xem là hoàn tất khi:
 
@@ -448,5 +524,7 @@ Một task chỉ được xem là hoàn tất khi:
 - Normal run đã chạy nếu task yêu cầu.
 - Output có command, exit code và kết quả thực tế.
 - TensorBoard/checkpoint tồn tại nếu task liên quan.
+- EDA có đủ resolution, class distribution và pixel statistics.
+- Evaluation có confusion matrix, precision, recall, F1-score và AUC-ROC hợp lệ.
 - Kết quả đã được đối chiếu với Description.
 - AI không báo PASS chỉ dựa trên việc code không báo lỗi cú pháp.

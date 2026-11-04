@@ -65,7 +65,9 @@ Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures/
 │   ├── model_builder.py        # Class TransferModelBuilder (ResNet18, VGG16, DenseNet121)
 │   ├── trainer.py              # Class ModelTrainer (Vòng lặp Training 5 bước & Validation)
 │   └── logger.py               # Class TensorBoardLogger (add_scalar, add_graph, add_image)
-│
+│   ├── eda.py                  # EDA resolution, class distribution, pixel statistics
+│   └── evalution.py            # Confusion Matrix, Precision, Recall, F1-score, AUC-ROC
+|
 ├── runs/                       # Thư mục lưu log TensorBoard (SummaryWriter)
 │
 ├── checkpoints/                # Thư mục lưu trọng số mô hình đã huấn luyện (.pth)
@@ -93,12 +95,28 @@ cấu hình. Test chỉ được dùng cho đánh giá cuối cùng.
 - `trainer`: training loop, evaluation loop, loss, accuracy, device.
 - `logger`: scalar, graph, ảnh mẫu, text config, checkpoint và close writer.
 - `main`: đọc config, lắp pipeline, chạy epoch và xử lý checkpoint.
+- `eda`: kiểm tra resolution, số kênh, dtype, class distribution và thống kê pixel.
+- `evaluation`: tính confusion matrix, precision, recall, F1-score và AUC-ROC.
+
+### Phạm vi EDA và evaluation
+
+- EDA dữ liệu phải kiểm tra resolution, số kênh, dtype, class distribution và
+  pixel statistics trước normalize.
+- Evaluation cuối phải tạo confusion matrix, precision, recall, F1-score và
+  AUC-ROC cho bài toán 10 lớp.
+- Confusion matrix dùng nhãn thật theo hàng và nhãn dự đoán theo cột; AUC-ROC
+  dùng score/xác suất trước `argmax` theo one-vs-rest.
+- Chỉ dùng validation để tuning; chỉ dùng test sau khi khóa checkpoint và
+  hyperparameter.
+- Mọi metric phải có kết quả theo lớp, aggregate phù hợp, seed, device,
+  checkpoint và đường dẫn artifact.
 
 ### Hợp đồng tối thiểu
 
 - Input: config hợp lệ, dataset có thể tải, model name được hỗ trợ.
-- Output: metric dạng số hữu hạn, log TensorBoard, best checkpoint và thông báo
-  lỗi rõ ràng khi input không hợp lệ.
+- Output: EDA report, metric dạng số hữu hạn, confusion matrix, precision,
+  recall, F1-score, AUC-ROC, log TensorBoard, best checkpoint và thông báo lỗi
+  rõ ràng khi input không hợp lệ.
 - Không nuốt exception, không trả về kết quả thành công giả.
 
 ## 3. Break Down
@@ -114,9 +132,11 @@ Các task chính:
 3. Training: freeze backbone, loss, optimizer, loop và validation.
 4. Tuning: thay một hyperparameter mỗi thí nghiệm.
 5. Logging: ghi loss/accuracy, graph, config và checkpoint.
-6. Evaluation: metric cuối và phân tích lỗi.
-7. Deployment: lệnh chạy, TensorBoard và resume checkpoint.
-8. Git: review diff và commit sau khi xác minh.
+6. EDA: resolution, class distribution và pixel statistics.
+7. Evaluation: confusion matrix, precision, recall, F1-score, AUC-ROC và
+   phân tích lỗi.
+8. Deployment: lệnh chạy, TensorBoard và resume checkpoint.
+9. Git: review diff và commit sau khi xác minh.
 
 ## 4. Build và triển khai
 
@@ -200,6 +220,9 @@ test tái hiện và test xác nhận.
 - Có parameter trainable ở classifier và backbone bị freeze đúng policy.
 - Một smoke run 1 epoch trên subset nhỏ chạy được CPU.
 - Metric không phải NaN/Inf, TensorBoard event và checkpoint được tạo.
+- EDA xác nhận resolution, phân phối nhãn và thống kê pixel.
+- Evaluation tạo confusion matrix `10x10`, precision, recall, F1-score và
+  AUC-ROC từ score/xác suất đa lớp.
 
 ## 6. Git
 
@@ -216,3 +239,8 @@ chưa được yêu cầu.
 - Kết quả tái lập được với seed/config đã ghi.
 - Có metric và artifact để kiểm tra, không kết luận từ cảm tính.
 - Có giải thích ngắn cho các quyết định freeze, classifier và hyperparameter.
+
+## 8. Additional files
+
+- `src/eda.py`: EDA resolution, class distribution, pixel statistics.
+- `src/evaluation.py`: Confusion Matrix, Precision, Recall, F1-score, AUC-ROC.
