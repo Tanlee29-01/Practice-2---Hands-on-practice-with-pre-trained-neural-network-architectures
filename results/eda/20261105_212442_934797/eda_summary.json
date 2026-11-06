@@ -1,0 +1,251 @@
+{
+  "source": "torchvision.datasets.CIFAR10",
+  "data_directory": "C:\\Users\\homin\\Downloads\\Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures-main (1)\\Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures-main\\data",
+  "seed": 42,
+  "torch_version": "2.15.0+cpu",
+  "mode": "full",
+  "split_policy": "Same seeded permutation as tests/experiments.py: 45000 train, 5000 validation, 10000 test, before experiment sample limits. main.py currently uses the unsplit 50000 training images.",
+  "training_transforms_from_source": {
+    "resize": [
+      224,
+      224
+    ],
+    "random_horizontal_flip": "train only",
+    "ToTensor": "[0,255] to [0,1]",
+    "normalization_mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "normalization_std": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "note": "Statistics describe original images before transforms. ImageNet normalization constants are reported from source. Test statistics are descriptive only, not used for tuning.",
+  "splits": {
+    "train": {
+      "samples_analyzed": 45000,
+      "image_shape_HWC": [
+        32,
+        32,
+        3
+      ],
+      "dtype": "uint8",
+      "channel_order": [
+        "R",
+        "G",
+        "B"
+      ],
+      "pixel_space": "Original [0,255], before transforms",
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "mean": [
+        125.29424537760417,
+        122.95115991753472,
+        113.8823193359375
+      ],
+      "std_population": [
+        62.99748605799579,
+        62.1062423367739,
+        66.72949420403032
+      ],
+      "mean_0_1": [
+        0.49134998187295753,
+        0.48216141144131264,
+        0.44659733072916663
+      ],
+      "std_0_1": [
+        0.24704896493331685,
+        0.2435538915167604,
+        0.26168429099619733
+      ],
+      "nan_count": 0,
+      "inf_count": 0,
+      "out_of_range_count": 0,
+      "full_split_size": 45000,
+      "class_names": [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck"
+      ],
+      "class_counts": [
+        4470,
+        4517,
+        4522,
+        4522,
+        4507,
+        4503,
+        4483,
+        4482,
+        4489,
+        4505
+      ],
+      "exactly_balanced": false
+    },
+    "validation": {
+      "samples_analyzed": 5000,
+      "image_shape_HWC": [
+        32,
+        32,
+        3
+      ],
+      "dtype": "uint8",
+      "channel_order": [
+        "R",
+        "G",
+        "B"
+      ],
+      "pixel_space": "Original [0,255], before transforms",
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "mean": [
+        125.4209720703125,
+        122.9435021484375,
+        113.7129578125
+      ],
+      "std_population": [
+        62.954690451933985,
+        61.930671533154374,
+        66.48294499450195
+      ],
+      "mean_0_1": [
+        0.4918469492953431,
+        0.4821313809742647,
+        0.4459331678921568
+      ],
+      "std_0_1": [
+        0.2468811390271921,
+        0.2428653785613897,
+        0.260717431350988
+      ],
+      "nan_count": 0,
+      "inf_count": 0,
+      "out_of_range_count": 0,
+      "full_split_size": 5000,
+      "class_names": [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck"
+      ],
+      "class_counts": [
+        530,
+        483,
+        478,
+        478,
+        493,
+        497,
+        517,
+        518,
+        511,
+        495
+      ],
+      "exactly_balanced": false
+    },
+    "test": {
+      "samples_analyzed": 10000,
+      "image_shape_HWC": [
+        32,
+        32,
+        3
+      ],
+      "dtype": "uint8",
+      "channel_order": [
+        "R",
+        "G",
+        "B"
+      ],
+      "pixel_space": "Original [0,255], before transforms",
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "mean": [
+        126.02464140625,
+        123.70850419921875,
+        114.85431865234375
+      ],
+      "std_population": [
+        62.89639134921989,
+        61.93752718231369,
+        66.70605639561597
+      ],
+      "mean_0_1": [
+        0.4942142800245098,
+        0.4851313890165441,
+        0.4504090927542892
+      ],
+      "std_0_1": [
+        0.24665251509497996,
+        0.2428922634600537,
+        0.26159237802202345
+      ],
+      "nan_count": 0,
+      "inf_count": 0,
+      "out_of_range_count": 0,
+      "full_split_size": 10000,
+      "class_names": [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck"
+      ],
+      "class_counts": [
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "exactly_balanced": true
+    }
+  }
+}

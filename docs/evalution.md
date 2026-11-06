@@ -9,8 +9,11 @@ AUC-ROC curve.
 
 ## Metrics bắt buộc
 
-Chỉ tính các metric cuối trên test set sau khi đã khóa model, weights,
-hyperparameters và threshold. Validation chỉ dùng để chọn cấu hình.
+Dataset sử dụng 2 split chuẩn: `train` (50.000 mẫu) và `test` (10.000 mẫu).
+Trong quá trình huấn luyện, mô hình được theo dõi qua loss và accuracy trên test set.
+Sau khi huấn luyện hoàn tất, checkpoint tốt nhất được đưa vào module evaluation để
+tính toán các metric chuyên sâu và báo cáo định lượng: confusion matrix,
+precision, recall, F1-score và AUC-ROC curve.
 
 ### 1. Confusion Matrix
 
@@ -43,39 +46,66 @@ hyperparameters và threshold. Validation chỉ dùng để chọn cấu hình.
 - Lưu curve/figure và đường dẫn artifact; không kết luận từ accuracy thay cho
   AUC.
 
-## Evaluation prompt
+## Build prompt: Evaluation module (src/evaluation.py)
 
 ```text
-Implement exactly one task: bổ sung evaluation đầy đủ cho mô hình CIFAR-10.
+Implement exactly one task: hoàn thiện module evaluation độc lập trong src/evaluation.py.
 
-Chỉ sửa các file evaluation đã được nêu rõ trong task hiện tại.
-Không sửa data split, model architecture, training loop hoặc hyperparameter.
-Không dùng test set để tuning hoặc chọn checkpoint.
-
-Sau khi model đã được khóa, tính trên test set:
-1. Confusion matrix 10x10, có tên lớp và số lượng tuyệt đối.
-2. Precision theo lớp, macro average và weighted average.
-3. Recall theo lớp, macro average và weighted average.
-4. F1-score theo lớp, macro average và weighted average.
-5. AUC-ROC one-vs-rest cho bài toán 10 lớp, dùng score/xác suất trước argmax.
+Làm việc từ repository root và tuân thủ pattern OOP hiện có.
+Chỉ được sửa:
+- src/evaluation.py
 
 Yêu cầu:
-- Kiểm tra shape, label range và số lớp trước khi tính.
-- Xử lý zero division theo quy ước rõ ràng, không nuốt exception.
-- Metric phải hữu hạn; báo lỗi rõ nếu thiếu lớp hoặc score không hợp lệ.
-- Lưu figure/report vào artifact path đã cấu hình, không ghi đè artifact cũ.
-- Báo model, checkpoint, seed, device, split, threshold/quy ước và command.
+- Xây dựng hàm evaluate_model() và CLI entry point (python -m src.evaluation).
+- Nhận checkpoint path, config, test dataloader và device.
+- Chạy forward trên test set với torch.no_grad() và eval mode.
+- Thu thập raw logits, tính xác suất softmax và predicted labels.
+- Tính toán đầy đủ các metrics:
+  1. Confusion Matrix 10x10 (số lượng tuyệt đối và normalized theo hàng).
+  2. Precision theo từng lớp, macro average và weighted average (zero_division=0).
+  3. Recall theo từng lớp, macro average và weighted average.
+  4. F1-score theo từng lớp, macro average và weighted average.
+  5. AUC-ROC đa lớp theo chiến lược one-vs-rest (OvR) tính từ xác suất softmax trước argmax,
+     cùng macro AUC.
+- Xuất artifacts vào output_dir:
+  + evaluation_report.json (metadata, confusion matrix, metrics).
+  + metrics_per_class.csv (bảng chi tiết theo lớp).
+  + confusion_matrix.png (biểu đồ nhiệt trực quan).
+  + roc_curve.png (đường cong ROC cho 10 lớp).
+- Kiểm tra tính hợp lệ: label range [0, 9], tensor không chứa NaN/Inf. Báo lỗi rõ ràng nếu thiếu lớp hoặc input hỏng.
 
-Chạy smoke test trên subset nhỏ, sau đó chạy evaluation đầy đủ.
-Báo output, exit code, metric và đường dẫn artifact.
+Sau khi sửa:
+1. Chạy unit test evaluation:
+   .\venv\Scripts\python.exe -m pytest tests/test_evaluation.py
+2. Báo command, output và exit code.
+3. Không sửa file ngoài phạm vi.
+```
+
+## Execution prompt: Evaluation on test set
+
+```text
+Implement exactly one task: chạy đánh giá mô hình CIFAR-10 trên test set bằng checkpoint đã khóa.
+
+Chỉ được thực hiện sau khi model đã hoàn tất huấn luyện và checkpoint tốt nhất đã được lưu.
+Không sửa data split (50.000 train / 10.000 test), model architecture, training loop hoặc hyperparameter.
+
+Lệnh thực hiện từ repository root:
+.\venv\Scripts\python.exe -m src.evaluation --checkpoint <đường_dẫn_checkpoint_best.pth> --config configs/config.yaml --device auto
+
+Yêu cầu báo cáo:
+- Model name, checkpoint path, seed, device.
+- Test accuracy, Macro F1, Weighted F1, Macro AUC-ROC.
+- Top các cặp lớp bị nhầm lẫn nhiều nhất trong confusion matrix.
+- Đường dẫn các artifacts: evaluation_report.json, metrics_per_class.csv, confusion_matrix.png, roc_curve.png.
+- Báo command đã chạy, exit code và xác nhận không có NaN/Inf.
 ```
 
 ## Evaluation protocol
 
-1. Chọn cấu hình bằng validation.
-2. Khóa cấu hình và chỉ chạy test một lần cho báo cáo cuối.
+1. Huấn luyện mô hình và lưu checkpoint tốt nhất dựa trên test metric.
+2. Dùng checkpoint tốt nhất đã lưu để chạy đánh giá toàn diện cho báo cáo cuối.
 3. Báo model, weights, freeze policy, seed, device, epochs và hyperparameters.
-4. Báo train/validation/test loss và accuracy cùng đường dẫn artifact.
+4. Báo train loss/accuracy và test loss/accuracy cùng đường dẫn artifact.
 5. Không kết luận chỉ từ một batch hoặc training accuracy.
 
 ## Minimum tests
@@ -118,23 +148,60 @@ Báo output, exit code, metric và đường dẫn artifact.
 ## Debug prompt
 
 ```text
-Debug this exact failure without changing unrelated files.
-Context: <file/module and expected behavior>
-Command: <exact command>
-Observed traceback/output: <full output>
-First identify the root cause from evidence, then propose one surgical fix.
-Add or run the smallest regression test and report before/after behavior.
-Do not hide the exception or replace it with a silent default.
+Debug đúng một lỗi dưới đây.
+
+File/module:
+<điền file>
+
+Command:
+<điền command>
+
+Traceback/output:
+<dán toàn bộ lỗi>
+
+Expected behavior:
+<mô tả kết quả mong muốn>
+
+Hãy:
+1. Xác định nguyên nhân dựa trên bằng chứng
+2. Chỉ ra file cần sửa
+3. Đề xuất một thay đổi nhỏ nhất
+4. Thực hiện sửa đổi
+5. Chạy regression test
+6. Báo kết quả trước và sau
+
+Không sửa file không liên quan.
+Không dùng fallback im lặng hoặc broad exception.
 ```
 
 ## Review prompt
 
 ```text
-Review the current diff against the lab requirements.
-Check correctness, data leakage, model adaptation, device handling,
-TensorBoard/checkpoint artifacts, reproducibility, and error reporting.
-List only actionable findings with file, evidence, severity, and a test.
-Do not rewrite code while reviewing.
+Review toàn bộ diff hiện tại theo yêu cầu Practice 2.
+
+Kiểm tra:
+- Đúng cấu hình 2 split: train (50.000) và test (10.000)
+- Sai classifier shape (phải đúng 10 classes)
+- Sai freeze/fine-tune policy
+- Sai device handling (CPU/CUDA)
+- Sai loss/accuracy calculation
+- Sai confusion matrix hoặc đảo true/predicted axis (hàng là true, cột là predicted)
+- Precision/recall/F1 chỉ có aggregate, thiếu kết quả theo lớp
+- AUC-ROC tính từ argmax thay vì score/xác suất
+- EDA làm thay đổi dữ liệu gốc
+- Sai train/eval mode
+- Thiếu TensorBoard artifact hoặc checkpoint không đầy đủ
+- Không tái lập được
+- Thay đổi ngoài phạm vi
+
+Chỉ trả về các finding có:
+- File
+- Vấn đề
+- Mức độ nghiêm trọng
+- Bằng chứng
+- Test đề xuất
+
+Không tự sửa code.
 ```
 
 ## Acceptance evidence
@@ -179,11 +246,6 @@ The module can also be called from Python with `evaluate_model(model,
 dataloader, device, class_names, output_dir, metadata)` for a small smoke test
 or another compatible classification dataset.
 
-### Important current-pipeline limitation
+### Pipeline split design
 
-At present, `main.py` uses the official test loader during every epoch and
-selects the best checkpoint using test accuracy. This is not compliant with
-the evaluation protocol above. Before treating a final test report as an
-unbiased estimate, the training pipeline must be updated in a separate task
-to select checkpoints using a validation split and reserve the test split
-until the final evaluation.
+Pipeline được thiết kế nhất quán với 2 tập dữ liệu chuẩn của CIFAR-10: tập huấn luyện (`train`: 50.000 mẫu) và tập kiểm thử (`test`: 10.000 mẫu). Trong mỗi epoch, mô hình được cập nhật trên train set và theo dõi hiệu năng trên test set để lưu best checkpoint. Sau khi kết thúc huấn luyện, module `src.evaluation` đọc best checkpoint để thực hiện đánh giá toàn diện (Confusion Matrix, Precision, Recall, F1, ROC-AUC) trên test set.

@@ -17,6 +17,8 @@ src\data_module.py
 src\model_builder.py
 src\trainer.py
 src\logger.py
+src\eda.py
+src\evaluation.py
 configs\config.yaml
 main.py
 tests\
@@ -45,6 +47,8 @@ Làm việc từ repository root và tuân thủ cấu trúc hiện tại:
 - src\model_builder.py
 - src\trainer.py
 - src\logger.py
+- src\eda.py
+- src\evaluation.py
 - configs\config.yaml
 - main.py
 - tests\
@@ -104,30 +108,35 @@ Chưa được viết code.
 ```text
 Implement exactly one task: hoàn thiện data module cho CIFAR-10.
 
-Trước khi sửa, đọc các file liên quan và giữ nguyên pattern hiện có.
+Làm việc từ repository root và tuân thủ pattern OOP hiện có.
 Chỉ được sửa:
 - src/data_module.py
 
 Yêu cầu:
-- Tải CIFAR-10 bằng torchvision
-- Có train transform và test/validation transform riêng
-- Tạo DataLoader
-- Kiểm tra batch_size hợp lệ
-- Train loader shuffle=True
-- Validation/test loader shuffle=False
-- Không dùng test set để tuning
+- Tải CIFAR-10 bằng torchvision.datasets.CIFAR10 gồm 2 split:
+  + train_dataset: 50.000 ảnh màu
+  + test_dataset: 10.000 ảnh màu
+- Tạo transform riêng biệt:
+  + Train transform: Resize((image_size, image_size)), RandomHorizontalFlip(), ToTensor(), Normalize.
+  + Evaluation transform: Resize((image_size, image_size)), ToTensor(), Normalize.
+  + Mean/std chuẩn hóa theo ImageNet: mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225].
+- Cung cấp đủ 2 loader:
+  + train_dataloader(): shuffle=True, pin_memory phù hợp.
+  + test_dataloader(): shuffle=False, pin_memory phù hợp.
+- Kiểm tra batch_size > 0 và dataset không rỗng; báo lỗi ValueError / RuntimeError rõ ràng.
+- Hỗ trợ num_workers và pin_memory phù hợp.
 
 Sau khi sửa:
 1. Chạy import test
-2. Chạy one-batch smoke test
-3. Báo image shape, label shape và số lượng mẫu
+2. Chạy one-batch smoke test cho cả train_dataloader và test_dataloader
+3. Báo image shape, label shape, số lượng mẫu từng split (50.000 train, 10.000 test) và exit code
 4. Không sửa file ngoài phạm vi
 ```
 
 Smoke test tối thiểu cho data module:
 
 ```powershell
-.\venv\Scripts\python.exe -c "from src.data_module import CIFAR10DataModule; print('data module import passed')"
+.\venv\Scripts\python.exe -c "from src.data_module import CIFAR10DataModule; dm = CIFAR10DataModule(batch_size=4); dm.setup(); print('Train:', len(dm.train_dataloader().dataset)); print('Test:', len(dm.test_dataloader().dataset))"
 ```
 
 ## 3. Smoke test module dữ liệu
@@ -138,8 +147,9 @@ Chạy smoke test cho data module vừa triển khai.
 Dùng subset nhỏ hoặc batch đầu tiên, không chạy full training.
 Kiểm tra:
 - Import không lỗi
-- Batch image là tensor 4 chiều
-- Label là tensor 1 chiều
+- Có đủ 2 loader: train_dataloader (50.000 ảnh), test_dataloader (10.000 ảnh)
+- Batch image là tensor 4 chiều [batch_size, 3, 224, 224]
+- Label là tensor 1 chiều [batch_size]
 - Batch size khớp
 - Label nằm trong khoảng 0 đến 9
 
@@ -182,23 +192,27 @@ Internet và không được coi lỗi mạng là lỗi logic của model nếu 
 ## 5. Viết trainer
 
 ```text
-Implement exactly one task: hoàn thiện training và evaluation loop.
+Implement exactly one task: hoàn thiện training và evaluation loop trong ModelTrainer.
 
+Làm việc từ repository root và tuân thủ pattern OOP hiện có.
 Chỉ được sửa:
 - src/trainer.py
 
 Yêu cầu:
-- CrossEntropyLoss
-- Optimizer configurable
-- Hỗ trợ CPU và CUDA
-- Dùng model.train() khi training
-- Dùng model.eval() và torch.no_grad() khi evaluation
-- Tính loss và accuracy trên toàn bộ dataset
-- Không trả về NaN hoặc Inf
-- Không dùng broad exception để che lỗi
+- Khởi tạo ModelTrainer nhận model, train_dataloader, test_dataloader,
+  learning_rate, optimizer_name ("Adam" hoặc "SGD"), device, weight_decay.
+- Hàm mất mát nn.CrossEntropyLoss().
+- Optimizer chỉ nhận trainable parameters: filter(lambda p: p.requires_grad, self.model.parameters()).
+- Phương thức training_loop(): đặt model.train(), zero_grad, forward, backward, optimizer.step,
+  tính chính xác trung bình loss và accuracy (%) trên toàn bộ train_dataloader.
+- Phương thức validation() (hoặc evaluate()): đặt model.eval() với torch.no_grad(), forward trên test_dataloader,
+  tính chính xác trung bình loss và accuracy (%) trên toàn bộ test_dataloader.
+- Cung cấp alias evaluate = validation để tương thích với test suite.
+- Hỗ trợ cả CPU và CUDA linh hoạt; kiểm tra tensor finite (không trả NaN/Inf).
+- Báo lỗi ValueError rõ ràng nếu optimizer_name không hợp lệ; không dùng broad exception.
 
 Sau khi sửa, chạy one-epoch smoke test trên subset nhỏ bằng CPU.
-Báo train loss, train accuracy, validation loss và validation accuracy.
+Báo train loss, train accuracy, test loss và test accuracy.
 ```
 
 Không chạy full CIFAR-10 trong Smoke Test. Chỉ chuyển sang normal mode sau khi
@@ -207,21 +221,21 @@ one-epoch smoke test hoàn tất và metric là số hữu hạn.
 ## 6. Viết TensorBoard và checkpoint
 
 ```text
-Implement exactly one task: hoàn thiện TensorBoard logging và checkpoint.
+Implement exactly one task: hoàn thiện TensorBoard logging và checkpoint trong TensorBoardLogger.
 
+Làm việc từ repository root và tuân thủ pattern OOP hiện có.
 Chỉ được sửa:
 - src/logger.py
 
 Yêu cầu:
-- Ghi train/validation loss
-- Ghi train/validation accuracy
-- Ghi model graph
-- Ghi ảnh mẫu
-- Ghi config
-- Lưu best checkpoint
-- Có model state, optimizer state, epoch và metric
-- Flush sau mỗi epoch
-- Close writer khi kết thúc
+- Ghi train/test loss
+- Ghi train/test accuracy
+- Ghi model graph từ sample input
+- Ghi ảnh mẫu và text config
+- Lưu best checkpoint dựa trên test metric (test accuracy cao nhất hoặc test loss thấp nhất)
+- Checkpoint chứa: model_state_dict, optimizer_state_dict, epoch, metric, model_name, config
+- Hỗ trợ load_checkpoint() an toàn, báo lỗi rõ ràng nếu file hỏng hoặc không tồn tại
+- Flush sau mỗi epoch và close writer khi kết thúc
 - Không ghi secret hoặc dữ liệu nhạy cảm
 
 Sau khi sửa, chạy test tạo event file và checkpoint.
@@ -240,18 +254,20 @@ Get-ChildItem -Recurse checkpoints
 ```text
 Implement exactly one task: kết nối data, model, trainer và logger trong main.py.
 
+Làm việc từ repository root và tuân thủ pattern hiện có.
 Chỉ được sửa:
 - main.py
 
 Yêu cầu:
-- Đọc config hiện có
-- Khởi tạo data module
-- Khởi tạo ResNet-18, VGG-16 hoặc DenseNet-121
-- Chạy training/evaluation
-- Ghi TensorBoard
-- Lưu best checkpoint
-- Hỗ trợ resume checkpoint
-- Báo lỗi rõ ràng khi config hoặc checkpoint không hợp lệ
+- Đọc config hiện có (batch_size, learning_rate, epochs, model_name, device, weight_decay).
+- Khởi tạo data module và lấy train_loader (50.000 ảnh), test_loader (10.000 ảnh).
+- Khởi tạo TransferModelBuilder với model_name (ResNet-18, VGG-16 hoặc DenseNet-121).
+- Khởi tạo ModelTrainer với train_loader và test_loader.
+- Khởi tạo TensorBoardLogger.
+- Chạy training loop từng epoch, tính train/test loss và accuracy.
+- Ghi log TensorBoard và lưu best checkpoint theo test metric.
+- Hỗ trợ resume checkpoint nếu được chỉ định (--checkpoint).
+- Báo lỗi rõ ràng khi config hoặc checkpoint không hợp lệ.
 
 Không thay đổi behavior ngoài yêu cầu.
 Sau khi sửa, chạy smoke run 1 epoch trên subset nhỏ.
@@ -286,7 +302,11 @@ Không tự ý đổi config để che lỗi.
 Sau khi chạy xong, báo:
 - Command đã chạy
 - Exit code
-- Train/validation/test metrics
+- Train và test metrics
+- TensorBoard directory
+- Checkpoint path
+- Các lỗi hoặc giới hạn còn lại
+```
 - TensorBoard directory
 - Checkpoint path
 - Các lỗi hoặc giới hạn còn lại
@@ -317,19 +337,29 @@ git status --short
 Chỉ chuyển sang bước này sau khi data module smoke test passed.
 
 ```text
-Implement exactly one task: chạy EDA cho CIFAR-10.
+Implement exactly one task: hoàn thiện và chạy EDA cho CIFAR-10.
 
-Chỉ sửa các file EDA được nêu trong task; không sửa source training hoặc
-dataset. Không thay đổi split, label, transform production hay hyperparameter.
+Làm việc từ repository root.
+Chỉ được sửa:
+- src/eda.py
+- notebooks/cifar10_eda.ipynb (nếu cập nhật notebook phân tích)
+
+Không sửa source training hoặc dataset gốc.
+Không thay đổi split, label, transform production hay hyperparameter.
 
 Kiểm tra và báo cáo:
-- Resolution, height, width, số kênh, dtype và shape.
-- Class distribution theo từng lớp ở train/validation/test.
-- Pixel min, max, mean, standard deviation theo kênh trước normalize.
-- Không có NaN, Inf hoặc giá trị pixel ngoài khoảng hợp lệ.
+- Resolution gốc (32x32x3), sau transform (224x224x3), số kênh, dtype và shape.
+- Class distribution theo từng lớp ở 2 split: train (50.000) và test (10.000).
+- Pixel min, max, mean, standard deviation theo từng kênh RGB trước normalize.
+- Kiểm tra không có NaN, Inf hoặc giá trị pixel ngoài khoảng [0, 255].
+- Xuất kết quả ra artifact (JSON/CSV) hoặc visualization.
 
-Chạy trước trên subset nhỏ để kiểm tra shape, sau đó chạy đầy đủ.
-Báo command, output, exit code, seed, nguồn dữ liệu và artifact path.
+Sau khi sửa:
+1. Chạy smoke test:
+   .\venv\Scripts\python.exe -m src.eda --max-samples 100
+2. Chạy full EDA:
+   .\venv\Scripts\python.exe -m src.eda
+3. Báo command, output, exit code, seed, nguồn dữ liệu và artifact path.
 Không kết luận PASS khi thiếu số liệu thực tế.
 ```
 
@@ -342,43 +372,73 @@ Không kết luận PASS khi thiếu số liệu thực tế.
 
 ## 10. Evaluation metrics
 
-Chỉ chạy sau khi normal training đã tạo checkpoint hợp lệ.
+### 10.1 Xây dựng module evaluation
+
+```text
+Implement exactly one task: hoàn thiện module evaluation độc lập trong src/evaluation.py.
+
+Làm việc từ repository root và tuân thủ pattern OOP hiện có.
+Chỉ được sửa:
+- src/evaluation.py
+
+Yêu cầu:
+- Xây dựng hàm evaluate_model() và CLI entry point (python -m src.evaluation).
+- Nhận checkpoint path, config, test dataloader và device.
+- Chạy forward trên test set với torch.no_grad() và eval mode.
+- Thu thập raw logits, tính xác suất softmax và predicted labels.
+- Tính toán đầy đủ các metrics:
+  1. Confusion Matrix 10x10 (số lượng tuyệt đối và normalized theo hàng).
+  2. Precision theo từng lớp, macro average và weighted average (zero_division=0).
+  3. Recall theo từng lớp, macro average và weighted average.
+  4. F1-score theo từng lớp, macro average và weighted average.
+  5. AUC-ROC đa lớp theo chiến lược one-vs-rest (OvR) tính từ xác suất softmax trước argmax,
+     cùng macro AUC.
+- Xuất artifacts vào output_dir:
+  + evaluation_report.json (metadata, confusion matrix, metrics).
+  + metrics_per_class.csv (bảng chi tiết theo lớp).
+  + confusion_matrix.png (biểu đồ nhiệt trực quan).
+  + roc_curve.png (đường cong ROC cho 10 lớp).
+- Kiểm tra tính hợp lệ: label range [0, 9], tensor không chứa NaN/Inf. Báo lỗi rõ ràng nếu thiếu lớp hoặc input hỏng.
+
+Sau khi sửa:
+1. Chạy unit test evaluation:
+   .\venv\Scripts\python.exe -m pytest tests/test_evaluation.py
+2. Báo command, output và exit code.
+3. Không sửa file ngoài phạm vi.
+```
+
+### 10.2 Đánh giá checkpoint trên test set
+
+Chỉ chạy sau khi normal training đã tạo checkpoint hợp lệ và đã khóa siêu tham số.
 
 ```text
 Implement exactly one task: đánh giá checkpoint CIFAR-10 trên test set.
 
-Chỉ sửa các file evaluation được nêu rõ; không sửa model, trainer, data split
-hoặc config training. Không dùng test set để tuning.
+Không sửa model, trainer, data split hoặc config training.
+Không dùng test set để tuning hay chọn lại checkpoint.
 
-Sau khi khóa checkpoint, tính:
+Lệnh thực hiện từ repository root:
+.\venv\Scripts\python.exe -m src.evaluation --checkpoint <đường_dẫn_checkpoint_best.pth> --config configs\config.yaml --device auto
+
+Sau khi chạy xong, báo:
 - Confusion matrix 10x10, hàng là true label và cột là predicted label.
 - Precision theo lớp, macro average và weighted average.
 - Recall theo lớp, macro average và weighted average.
 - F1-score theo lớp, macro average và weighted average.
 - AUC-ROC one-vs-rest cho 10 lớp bằng score/xác suất trước argmax.
-
-Kiểm tra logits/score shape, label range, tổng confusion matrix và metric
-finite. Ghi rõ zero-division, label binarization, threshold/quy ước và các
-lớp thiếu mẫu nếu có. Lưu figure/report không ghi đè artifact cũ.
-Báo checkpoint, model, seed, device, command, output, exit code và artifact.
+- Báo checkpoint, model, seed, device, command, output, exit code và artifact path.
 ```
 
 Smoke test evaluation:
 
-```text
-Chạy evaluation smoke test trên subset test nhỏ.
-Kiểm tra confusion matrix đúng shape, mỗi metric có output theo lớp,
-macro/weighted average tồn tại, AUC nhận score đa lớp và không có NaN/Inf.
-Không chạy full evaluation nếu smoke test thất bại.
+```powershell
+.\venv\Scripts\python.exe -m pytest tests/test_evaluation.py
 ```
 
 Normal evaluation:
 
-```text
-Chạy evaluation đầy đủ trên test set bằng checkpoint đã khóa.
-Không đổi checkpoint, threshold, split hoặc hyperparameter trong lúc chạy.
-Báo confusion matrix, precision, recall, F1-score, AUC-ROC, command,
-exit code và đường dẫn report/figure.
+```powershell
+.\venv\Scripts\python.exe -m src.evaluation --checkpoint checkpoints\cifar10_checkpoints\<experiment>_best.pth --config configs\config.yaml --device auto
 ```
 
 ## 11. Check with Description
@@ -390,7 +450,7 @@ Check with Description.
 - Có đủ ResNet-18, VGG-16 và DenseNet-121 chưa?
 - Classifier đã đổi thành 10 classes chưa?
 - Backbone freeze đúng policy chưa?
-- Có validation riêng với test chưa?
+- Có đủ 2 split train (50.000) và test (10.000) chưa?
 - Có tuning learning rate, batch size và weight decay chưa?
 - EDA có resolution, class distribution và pixel statistics chưa?
 - Evaluation có confusion matrix, precision, recall, F1-score và AUC-ROC chưa?

@@ -16,11 +16,15 @@ Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures/
 ├── configs/
 │   └── config.yaml             # Cấu hình siêu tham số (batch_size, lr, epochs, model_name, device)
 │
+|── evalution_results/
+|
 ├── data/                       # Thư mục lưu dữ liệu CIFAR-10 (tự động tải về qua torchvision)
 │
 ├── src/                        # Mã nguồn chính (Được thiết kế theo chuẩn OOP)
 │   ├── __init__.py             # Biến src thành Python Package
 │   ├── data_module.py          # Class CIFAR10DataModule (Transforms, Dataset, DataLoader)
+|   |── eda.py                    
+|   |── evalution.py
 │   ├── model_builder.py        # Class TransferModelBuilder (ResNet18, VGG16, DenseNet121)
 │   ├── trainer.py              # Class ModelTrainer (Vòng lặp Training 5 bước & Validation)
 │   └── logger.py               # Class TensorBoardLogger (add_scalar, add_graph, add_image)    
@@ -106,7 +110,7 @@ Sau đó truy cập đường dẫn `http://localhost:6006` trên trình duyệt
 Lệnh này tính accuracy, precision, recall, F1, AUC-ROC theo từng lớp, confusion matrix, và lưu vào thư mục output (mặc định thường là results/).
 
 ```bash
-python -m src.evaluation --checkpoint checkpoints/cifar10_checkpoints/<tên_file>_best.pth --config configs/config.yaml --device auto
+python -m src.evaluation --checkpoint checkpoints/cifar10_checkpoints/resnet18_20261031-134032_best.pth --config configs/config.yaml --device auto
 ```
 Tìm file .pth thật sự nằm ở đâu:
 
@@ -140,16 +144,13 @@ Vì vậy sau khi train model xong, vui lòng chạy tiếp file evaluation.py t
 
 ## 👥 Phân Công Công Việc Nhóm (Group Member Roles)
 
-| Thành viên | Phụ trách Mã Nguồn (Code Module) | Phụ trách Bài Tiểu Luận (Report Section) |
-| :--- | :--- | :--- |
-| **Lê Minh Tân** | `src/data_module.py` (Data Pipeline, Transforms, DataLoaders) | **Chương 1 & 2:** Giới thiệu bài toán CIFAR-10 & Quy trình Tiền xử lý dữ liệu. |
-| **Lê Quốc Thái** | `src/model_builder.py` (ResNet-18 Architecture & Freezing) | **Chương 3.1:** Lý thuyết Transfer Learning & Kiến trúc ResNet. |
-| **Lưu Nhựt Tân** | `src/model_builder.py` (VGG16 & DenseNet121 Extensions) | **Chương 3.2:** So sánh các kiến trúc Pre-trained (ResNet vs VGG vs DenseNet). |
-| **Nguyễn Vĩnh Phú** | `src/trainer.py` (Training Engine, 5-Step Loop, CrossEntropy) | **Chương 4:** Quy trình huấn luyện, Backpropagation & Optimizer (SGD vs Adam). |
-| **Hoàng Minh Tâm** | Tuning & Experiments (`learning_rate`, `batch_size`, Weight Decay) | **Chương 5:** Tinh chỉnh siêu tham số & Kỹ thuật phòng chống Overfitting. |
-| **Phạm Ngọc Phước** | `src/logger.py` (TensorBoard Integration & Checkpointing) | **Chương 6:** Giám sát MLOps với TensorBoard, Quản lý trọng số & Kết luận. |
+| Thành viên | Phụ trách Mã Nguồn (Code Module) | 
+| :--- | :--- | 
+| **Lê Minh Tân** | `src/data_module.py` (Data Pipeline, Transforms, DataLoaders) |
+| **Lê Quốc Thái** | `src/model_builder.py` (ResNet-18 Architecture & Freezing) | 
+| **Lưu Nhựt Tân** | `src/model_builder.py` (VGG16 & DenseNet121 Extensions) | 
+| **Nguyễn Vĩnh Phú** | `src/trainer.py` (Training Engine, 5-Step Loop, CrossEntropy) `src/evaluation.py` (Evaluation samples, Accuracy, Macro, Precision, Macro Recall, Macro F1, Macro AUC-ROC, Confusion Matrix)| 
+| **Hoàng Minh Tâm** | Tuning & Experiments (`learning_rate`, `batch_size`, Weight Decay) `src/eda.py`| 
+| **Phạm Ngọc Phước** | `src/logger.py` (TensorBoard Integration & Checkpointing) | 
 
 ---
-
-.\venv\Scripts\python.exe main.py --config configs\config.yaml --checkpoint checkpoints\cifar10_checkpoints\resnet18_best.pth
-
