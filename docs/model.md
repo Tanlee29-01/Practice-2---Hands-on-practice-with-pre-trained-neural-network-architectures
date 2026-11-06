@@ -40,11 +40,31 @@ classifier có đúng `out_features=10`.
 ## Independent prompt
 
 ```text
-Implement only model construction and adaptation.
-Support ResNet18, VGG16, and DenseNet121 with 10 output classes.
-Freeze the backbone by default and expose an explicit fine-tune option.
-Do not modify data, trainer, logger, or README.
-Run a forward smoke test and report logits shape plus trainable parameter count.
+Implement exactly one task: hoàn thiện model builder cho transfer learning.
+
+Làm việc từ repository root và tuân thủ pattern OOP hiện có.
+Chỉ được sửa:
+- src/model_builder.py
+
+Yêu cầu:
+- Hỗ trợ cả 3 kiến trúc: ResNet-18, VGG-16 và DenseNet-121.
+- Dùng API weights hiện hành của torchvision (ví dụ: ResNet18_Weights.DEFAULT).
+- Thay classifier cuối thành 10 output classes:
+  + ResNet: thay model.fc
+  + VGG: thay model.classifier[6]
+  + DenseNet: thay model.classifier
+- Freeze backbone mặc định (requires_grad = False), chỉ cho phép classifier mới requires_grad = True.
+- Có policy fine-tune rõ ràng (cho phép unfreeze các layer cuối khi được cấu hình).
+- Tên model không hợp lệ phải báo ValueError kèm danh sách các lựa chọn được hỗ trợ.
+- Model trả về raw logits, không dùng softmax trước CrossEntropyLoss.
+
+Sau khi sửa:
+1. Chạy import test:
+   .\venv\Scripts\python.exe -c "from src.model_builder import TransferModelBuilder; print('Import PASS')"
+2. Chạy forward smoke test cho cả 3 kiến trúc:
+   .\venv\Scripts\python.exe -c "import torch; from src.model_builder import TransferModelBuilder; x = torch.randn(2, 3, 224, 224); [print(m, TransferModelBuilder(m, 10, pretrained=False).build()(x).shape) for m in ['resnet18', 'vgg16', 'densenet121']]"
+3. Báo logits shape [batch_size, 10], số lượng parameter tổng và trainable parameter cho từng mô hình.
+4. Không sửa file ngoài phạm vi.
 ```
 
 ## Verify

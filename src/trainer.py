@@ -107,6 +107,9 @@ class ModelTrainer:
 
         return avg_loss, accuracy
 
+    # Alias evaluate to validation for backward compatibility and test contracts.
+    evaluate = validation
+
     def fit(self, num_epochs):
         history = {
             "train_loss": [],
