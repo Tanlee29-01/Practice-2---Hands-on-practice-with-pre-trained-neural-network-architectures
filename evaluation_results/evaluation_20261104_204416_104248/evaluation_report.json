@@ -1,0 +1,238 @@
+{
+  "metadata": {
+    "model_name": "resnet18",
+    "checkpoint": "D:\\UTH\\Deeplearning\\lab\\Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures\\checkpoints\\cifar10_checkpoints\\resnet18_20261031-134032_best.pth",
+    "checkpoint_epoch": 8,
+    "checkpoint_metrics": {
+      "best_metric": 81.05
+    },
+    "seed": null,
+    "device": "cuda",
+    "split": "CIFAR-10 official test split",
+    "batch_size": 64
+  },
+  "num_samples": 10000,
+  "num_classes": 10,
+  "class_names": [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck"
+  ],
+  "confusion_matrix": [
+    [
+      828,
+      2,
+      32,
+      6,
+      7,
+      4,
+      8,
+      13,
+      82,
+      18
+    ],
+    [
+      15,
+      866,
+      3,
+      5,
+      1,
+      2,
+      6,
+      5,
+      21,
+      76
+    ],
+    [
+      33,
+      0,
+      754,
+      33,
+      58,
+      28,
+      66,
+      12,
+      11,
+      5
+    ],
+    [
+      18,
+      2,
+      40,
+      585,
+      39,
+      176,
+      84,
+      28,
+      17,
+      11
+    ],
+    [
+      11,
+      0,
+      48,
+      23,
+      769,
+      26,
+      54,
+      53,
+      12,
+      4
+    ],
+    [
+      3,
+      2,
+      28,
+      81,
+      30,
+      793,
+      28,
+      31,
+      3,
+      1
+    ],
+    [
+      4,
+      2,
+      23,
+      16,
+      22,
+      20,
+      906,
+      2,
+      3,
+      2
+    ],
+    [
+      14,
+      0,
+      24,
+      18,
+      56,
+      43,
+      12,
+      816,
+      8,
+      9
+    ],
+    [
+      49,
+      12,
+      11,
+      3,
+      2,
+      2,
+      4,
+      4,
+      899,
+      14
+    ],
+    [
+      19,
+      42,
+      2,
+      5,
+      0,
+      5,
+      2,
+      5,
+      31,
+      889
+    ]
+  ],
+  "metrics": {
+    "accuracy": 0.8105,
+    "macro_avg": {
+      "precision": 0.8112899361093231,
+      "recall": 0.8105,
+      "f1_score": 0.8087903826088233,
+      "auc_roc": 0.9807660555555555
+    },
+    "weighted_avg": {
+      "precision": 0.811289936109323,
+      "recall": 0.8105,
+      "f1_score": 0.8087903826088233
+    },
+    "per_class": {
+      "airplane": {
+        "precision": 0.8329979879275654,
+        "recall": 0.828,
+        "f1_score": 0.8304914744232699,
+        "auc_roc": 0.9838461111111112,
+        "support": 1000
+      },
+      "automobile": {
+        "precision": 0.9331896551724138,
+        "recall": 0.866,
+        "f1_score": 0.8983402489626556,
+        "auc_roc": 0.9931858888888889,
+        "support": 1000
+      },
+      "bird": {
+        "precision": 0.7813471502590673,
+        "recall": 0.754,
+        "f1_score": 0.7674300254452927,
+        "auc_roc": 0.9699584444444443,
+        "support": 1000
+      },
+      "cat": {
+        "precision": 0.7548387096774194,
+        "recall": 0.585,
+        "f1_score": 0.6591549295774648,
+        "auc_roc": 0.9580124444444444,
+        "support": 1000
+      },
+      "deer": {
+        "precision": 0.7815040650406504,
+        "recall": 0.769,
+        "f1_score": 0.7752016129032258,
+        "auc_roc": 0.974421,
+        "support": 1000
+      },
+      "dog": {
+        "precision": 0.721565059144677,
+        "recall": 0.793,
+        "f1_score": 0.7555979037636971,
+        "auc_roc": 0.9747844444444445,
+        "support": 1000
+      },
+      "frog": {
+        "precision": 0.7743589743589744,
+        "recall": 0.906,
+        "f1_score": 0.8350230414746544,
+        "auc_roc": 0.9874504444444444,
+        "support": 1000
+      },
+      "horse": {
+        "precision": 0.8421052631578947,
+        "recall": 0.816,
+        "f1_score": 0.8288471305231081,
+        "auc_roc": 0.9822053333333334,
+        "support": 1000
+      },
+      "ship": {
+        "precision": 0.827046918123275,
+        "recall": 0.899,
+        "f1_score": 0.8615237182558697,
+        "auc_roc": 0.9920114444444444,
+        "support": 1000
+      },
+      "truck": {
+        "precision": 0.8639455782312925,
+        "recall": 0.889,
+        "f1_score": 0.8762937407589945,
+        "auc_roc": 0.9917849999999999,
+        "support": 1000
+      }
+    },
+    "zero_division": 0,
+    "auc_method": "one-vs-rest; trapezoidal area under ROC using softmax scores"
+  }
+}

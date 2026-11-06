@@ -37,7 +37,7 @@ chuyển sang bước kế tiếp.
 Thử tối thiểu ba kiến trúc: ResNet-18, VGG-16 và DenseNet-121. Baseline dùng
 CIFAR-10 với 10 lớp, CrossEntropyLoss, Adam, một giá trị learning rate và
 batch size rõ ràng. Mọi thí nghiệm phải ghi model, seed, device, hyperparameter,
-train metric và validation/test metric.
+train metric và test metric.
 
 ### How
 
@@ -55,8 +55,15 @@ train metric và validation/test metric.
 Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures/
 │
 ├── configs/
-│   └── config.yaml             # Cấu hình siêu tham số (batch_size, lr, epochs, model_name, device)
+│   └── config.yaml             
 │
+├── docs/
+│   ├── data.md             
+│   ├── demo.md          
+│   ├── evalution.md        
+│   ├── lab2_decription.md              
+│   |── model.md               
+│   └── training.md           
 ├── data/                       # Thư mục lưu dữ liệu CIFAR-10 (tự động tải về qua torchvision)
 │
 ├── src/                        # Mã nguồn chính (Được thiết kế theo chuẩn OOP)
@@ -64,16 +71,24 @@ Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures/
 │   ├── data_module.py          # Class CIFAR10DataModule (Transforms, Dataset, DataLoader)
 │   ├── model_builder.py        # Class TransferModelBuilder (ResNet18, VGG16, DenseNet121)
 │   ├── trainer.py              # Class ModelTrainer (Vòng lặp Training 5 bước & Validation)
-│   └── logger.py               # Class TensorBoardLogger (add_scalar, add_graph, add_image)
+│   |── logger.py               # Class TensorBoardLogger (add_scalar, add_graph, add_image)
 │   ├── eda.py                  # EDA resolution, class distribution, pixel statistics
-│   └── evalution.py            # Confusion Matrix, Precision, Recall, F1-score, AUC-ROC
+│   └── evaluation.py           # Confusion Matrix, Precision, Recall, F1-score, AUC-ROC
+|
+|── evalution_results           # Lưu trữu các kết quả đánh giá Confusion Matrix, Precision, Recall, F1-score, AUC-ROC mô hình 
+|   └── evaluation_YYYYMMDD
+|        ├── confusion_matrix.png     
+│        |── evaluation_report.json   
+│        ├── metrics_per_class.csv    
+│        └── roc_curve.png            
 |
 ├── runs/                       # Thư mục lưu log TensorBoard (SummaryWriter)
 │
 ├── checkpoints/                # Thư mục lưu trọng số mô hình đã huấn luyện (.pth)
 │
 ├── notebooks/                  # Jupyter Notebooks phục vụ thử nghiệm & phân tích kết quả
-│   └── experiment_demo.ipynb
+│   |── experiment_demo.ipynb
+|   └── cifar10_eda.ipynb
 │
 ├── main.py                     # Entry point chính chạy toàn bộ Pipeline
 ├── requirements.txt            # Thư viện phụ thuộc (PyTorch, Torchvision, Tensorboard,...)
@@ -84,12 +99,12 @@ Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures/
 `CIFAR-10 -> transforms -> Dataset -> DataLoader -> model -> loss ->
 optimizer -> train/evaluate -> TensorBoard/checkpoint`.
 
-Tách validation từ train để chọn hyperparameter; không dùng test set để chọn
-cấu hình. Test chỉ được dùng cho đánh giá cuối cùng.
+Sử dụng 2 split chuẩn của CIFAR-10 gồm train (50.000 ảnh) để cập nhật mô hình và
+test (10.000 ảnh) để đánh giá sau mỗi epoch và tổng kết.
 
 ### Ranh giới module
 
-- `data_module`: transforms, tải dataset, train/validation/test loader.
+- `data_module`: transforms, tải dataset, train/test loader.
 - `model_builder`: tải weights, thay classifier, freeze/unfreeze, kiểm tra số
   lớp và số parameter trainable.
 - `trainer`: training loop, evaluation loop, loss, accuracy, device.
@@ -100,14 +115,14 @@ cấu hình. Test chỉ được dùng cho đánh giá cuối cùng.
 
 ### Phạm vi EDA và evaluation
 
-- EDA dữ liệu phải kiểm tra resolution, số kênh, dtype, class distribution và
+- EDA dữ liệu phải kiểm tra resolution, số kênh, dtype, class distribution (train, test) và
   pixel statistics trước normalize.
 - Evaluation cuối phải tạo confusion matrix, precision, recall, F1-score và
-  AUC-ROC cho bài toán 10 lớp.
+  AUC-ROC cho bài toán 10 lớp trên test set bằng checkpoint tốt nhất.
 - Confusion matrix dùng nhãn thật theo hàng và nhãn dự đoán theo cột; AUC-ROC
   dùng score/xác suất trước `argmax` theo one-vs-rest.
-- Chỉ dùng validation để tuning; chỉ dùng test sau khi khóa checkpoint và
-  hyperparameter.
+- Theo dõi loss và accuracy trên test set sau mỗi epoch để lưu best checkpoint;
+  sau khi huấn luyện xong, chạy evaluation chuyên sâu trên test set.
 - Mọi metric phải có kết quả theo lớp, aggregate phù hợp, seed, device,
   checkpoint và đường dẫn artifact.
 
@@ -185,7 +200,7 @@ Smoke test phải nhanh và dùng subset nhỏ, không thay thế test đầy đ
 Sau khi smoke test thành công, chạy pipeline ở chế độ bình thường:
 
 - Chạy training với config thật.
-- Chạy evaluation trên validation/test đúng mục đích.
+- Chạy evaluation trên test set đúng mục đích.
 - Kiểm tra TensorBoard log.
 - Kiểm tra checkpoint và output metric.
 - Ghi lại command, device, seed và kết quả.

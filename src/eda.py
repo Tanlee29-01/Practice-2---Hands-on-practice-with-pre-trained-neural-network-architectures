@@ -102,19 +102,8 @@ def run(args):
         transform=None,
     )
 
-    # Tái hiện cách chia trong tests/experiments.py.
-    # Không sửa data module hoặc cách chia trong main.py.
-    generator = torch.Generator().manual_seed(args.seed)
-    order = torch.randperm(
-        len(train_data), generator=generator
-    ).numpy()
-
-    if len(order) <= 5000:
-        raise ValueError("Không đủ ảnh để tách validation.")
-
     splits = {
-        "train": (train_data, order[5000:]),
-        "validation": (train_data, order[:5000]),
+        "train": (train_data, np.arange(len(train_data))),
         "test": (test_data, np.arange(len(test_data))),
     }
 
@@ -131,10 +120,7 @@ def run(args):
         "torch_version": str(torch.__version__),
         "mode": "smoke_subset" if args.max_samples else "full",
         "split_policy": (
-            "Same seeded permutation as tests/experiments.py: "
-            "45000 train, 5000 validation, 10000 test, "
-            "before experiment sample limits. "
-            "main.py currently uses the unsplit 50000 training images."
+            "Standard CIFAR-10 splits: 50000 train, 10000 test."
         ),
         "training_transforms_from_source": {
             "resize": [224, 224],
@@ -153,7 +139,7 @@ def run(args):
 
     rows = []
     fig, axes = plt.subplots(
-        3, 1, figsize=(10, 10), constrained_layout=True
+        2, 1, figsize=(10, 8), constrained_layout=True
     )
 
     for axis, (name, (dataset, full_indices)) in zip(

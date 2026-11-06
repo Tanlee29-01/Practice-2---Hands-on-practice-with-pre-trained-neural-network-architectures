@@ -15,7 +15,7 @@ tra console có device, model, metric từng epoch, checkpoint và log directory
 ### 3. Compare
 
 Chạy từng model và từng tuning config. Không chạy sweep mù; mỗi run phải có
-seed, tên cấu hình và output riêng. So sánh validation trước, test sau.
+seed, tên cấu hình và output riêng. So sánh test metric giữa các cấu hình.
 
 ### 4. TensorBoard
 
@@ -53,42 +53,75 @@ khôi phục hoặc lỗi không tương thích được báo rõ.
 
 ## Prompt templates
 
-### Plan prompt
+Dự án áp dụng khung prompt chuẩn hóa (xem chi tiết kịch bản từng bước tại `docs/plan_run.md`). Dưới đây là 4 mẫu prompt cốt lõi:
+
+### 1. Plan prompt (Lập kế hoạch trước khi code)
 
 ```text
-Understand this pre-trained model lab before coding.
-State what/why/when/where/which/how, assumptions, files in scope,
-dependencies, risks, minimum test, and Definition of Done.
-Do not edit files. Keep the plan small and ordered.
+Hiểu rõ bài thực hành mô hình pre-trained trước khi viết code.
+Phân tích: what/why/when/where/which/how, assumptions, phạm vi file được sửa,
+dependencies, rủi ro, minimum test cần chạy và Definition of Done.
+Không sửa file nào. Kế hoạch phải chia nhỏ theo từng bước và có thứ tự rõ ràng.
 ```
 
-### Independent implementation prompt
+### 2. Implementation prompt (Thực hiện một nhiệm vụ độc lập)
 
 ```text
-Implement exactly one task: <single task>.
-Use existing patterns and touch only <allowed files>.
-Preserve current behavior outside the task.
-Add explicit validation and errors; do not use broad catches.
-Run the smallest relevant test and report changed files and evidence.
+Implement exactly one task: <tên nhiệm vụ duy nhất>.
+
+Làm việc từ repository root:
+D:\UTH\Deeplearning\lab\Practice-2---Hands-on-practice-with-pre-trained-neural-network-architectures
+
+Chỉ được sửa:
+- <danh sách file được phép sửa>
+
+Yêu cầu:
+- Tuân theo pattern OOP và thiết kế hiện có.
+- Bảo toàn hành vi đúng bên ngoài phạm vi task.
+- Có validation rõ ràng; không dùng broad exception hoặc fallback im lặng.
+
+Sau khi sửa:
+1. Chạy smoke test nhỏ nhất phù hợp.
+2. Báo file đã sửa, command đã chạy, output và exit code.
+3. Không sửa file ngoài phạm vi.
 ```
 
-### Review prompt
+### 3. Review prompt (Kiểm duyệt diff trước khi commit)
 
 ```text
-Review only the current diff for correctness against the lab requirements.
-Prioritize data leakage, wrong classifier shape, freeze/device bugs,
-metric mistakes, missing artifacts, and reproducibility.
-Return actionable findings with file, line, severity, evidence, and test.
-Do not make edits.
+Review toàn bộ diff hiện tại theo yêu cầu Practice 2.
+
+Kiểm tra:
+- Data leakage (dùng test set để tuning/checkpoint)
+- Sai classifier shape (phải đúng 10 classes)
+- Sai freeze/fine-tune policy
+- Sai device handling (CPU/CUDA)
+- Sai loss/accuracy calculation
+- Đảo trục confusion matrix (hàng=true, cột=pred)
+- Thiếu per-class metrics hoặc AUC-ROC tính sai
+- Thiếu TensorBoard/checkpoint artifacts
+- Bất kỳ thay đổi nào ngoài phạm vi
+
+Chỉ trả về các finding có: file, dòng, mức độ nghiêm trọng, bằng chứng và test đề xuất.
+Không tự ý sửa code trong lúc review.
 ```
 
-### Debug prompt
+### 4. Debug prompt (Xử lý lỗi đơn lẻ)
 
 ```text
-Investigate one failure using the exact command and full traceback below.
-Separate confirmed facts from hypotheses, identify the root cause,
-make one surgical fix, and run a regression/smoke test.
-Do not silence errors or change unrelated files.
+Debug đúng một lỗi dưới đây mà không thay đổi các file không liên quan.
+
+File/module: <file hoặc module bị lỗi>
+Command: <lệnh chính xác đã chạy>
+Traceback/output: <toàn bộ lỗi>
+Expected behavior: <kết quả mong đợi>
+
+Hãy:
+1. Xác định nguyên nhân gốc dựa trên bằng chứng thực tế.
+2. Đề xuất một thay đổi nhỏ nhất đúng vị trí.
+3. Thực hiện sửa đổi và chạy regression test.
+4. Báo kết quả trước và sau khi sửa.
+Không nuốt ngoại lệ hoặc dùng giá trị mặc định im lặng.
 ```
 
 ## AI usage and document
@@ -115,9 +148,9 @@ chứng; bằng chứng là code đã chạy, test passed và artifact kiểm tr
 9. Kiểm tra model name trước khi khởi tạo.
 10. Kiểm tra batch size và learning rate hợp lệ.
 11. Kiểm tra dữ liệu không rỗng.
-12. Dùng seed cho split và experiment.
-13. Tách validation khỏi test.
-14. Dùng transform deterministic cho validation/test.
+12. Dùng seed cho experiment.
+13. Chia 2 split chuẩn train (50.000) và test (10.000).
+14. Dùng transform deterministic cho test.
 15. Kiểm tra shape trước khi training.
 16. Kiểm tra logits có đúng số lớp.
 17. Đóng băng layer theo policy đã ghi.
@@ -130,7 +163,7 @@ chứng; bằng chứng là code đã chạy, test passed và artifact kiểm tr
 24. Ghi config vào TensorBoard.
 25. Ghi model graph bằng input mẫu.
 26. Flush và close TensorBoard writer.
-27. Lưu best checkpoint theo validation metric.
+27. Lưu best checkpoint theo test metric.
 28. Kiểm tra checkpoint trước khi load.
 29. Báo lỗi bằng exception rõ ràng.
 30. Giữ traceback hữu ích khi debug.
