@@ -20,9 +20,9 @@ checkpoints/
 # File giải thích cá nhân / scripts tạm
 GIAI_THICH_NHIEM_VU_LOGGER.md
 demo_chapter6_logger.py
-outputs/
-run_chapter6_tensorboard.py
-HUONG_DAN_CHI_TIET_CAC_HAM_LOGGER.md
-.vscode/
-KICH_BAN_THUYET_TRINH_PHUOC.md
-KIEN_TRUC_HE_THONG_VA_DANH_GIA_PHUOC.md
+
+
+# Notebook
+notebooks/src_output_demo.ipynb/
+notebooks/cuda.ipynb/
+notebooks/experiment_demo.ipynb/
