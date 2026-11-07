@@ -4,7 +4,10 @@ from torchvision import models
 
 
 class TransferModelBuilder_ResNet18:
-    """Xây dựng ResNet-18 cho bài toán CIFAR-10."""
+    """Xây dựng ResNet-18 cho bài toán CIFAR-10. 
+    Note 7/11/2026: can hieu model train tren du lieu gi de xac dinh bai toan (phan loai hay hoi quy)
+    - Can giu backbone 
+    """
 
     def __init__(
         self,
@@ -73,7 +76,7 @@ class TransferModelBuilder_VGG16:
 
         # Freeze toàn bộ trọng số hiện có của VGG-16.
         for parameter in model.parameters():
-            parameter.requires_grad = False
+            parameter.requires_grad = False # Luu y phan nay 7/11/2026
 
         # Lấy số lượng input của lớp Linear cuối trong sequential classifier (vị trí index 6).
         input_features = model.classifier[6].in_features
