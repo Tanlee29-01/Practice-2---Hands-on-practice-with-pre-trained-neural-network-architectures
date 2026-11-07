@@ -15,7 +15,20 @@ VGG-16 và DenseNet-121.
 - DenseNet: thay `model.classifier`.
 - Kiểm tra model trả logits, không tự softmax trước CrossEntropyLoss.
 - Tên model không hỗ trợ phải báo `ValueError` có danh sách lựa chọn.
-
+``` 7/11/2026 mistake much fix
+# 1. name
+- create date
+- update
+# 2. Purpose
+# 3. Intial model
+- Modek architec
+- IO model
+- source file
+# 4. trained model
+- Update: have after_trainer, completion , trainer_decs
+- Save model pth
+- Note: 
+```
 ### Transfer learning policy
 
 Baseline freeze toàn bộ backbone rồi mở `requires_grad` cho classifier mới.
