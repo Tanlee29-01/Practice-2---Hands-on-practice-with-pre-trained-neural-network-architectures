@@ -4,9 +4,9 @@ from torchvision import models
 
 
 class TransferModelBuilder_ResNet18:
-    """Xây dựng ResNet-18 cho bài toán CIFAR-10. 
-    Note 7/11/2026: can hieu model train tren du lieu gi de xac dinh bai toan (phan loai hay hoi quy)
-    - Can giu backbone 
+    """Xây dựng ResNet-18 cho bài toán CIFAR-10.
+    - Res: được train bộ dữ liệu imageNet 1k (bên trong bao gồm: )
+    - Đây là bài toán phân loại 10 đối tượng
     """
 
     def __init__(
@@ -32,7 +32,7 @@ class TransferModelBuilder_ResNet18:
 
         # Freeze toàn bộ trọng số hiện có của ResNet-18.
         for parameter in model.parameters():
-            parameter.requires_grad = False
+            parameter.requires_grad = False # <- đóng băng trọng số 
 
         # Lấy số lượng input của lớp fc cũ.
         input_features = model.fc.in_features
